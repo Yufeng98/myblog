@@ -1,7 +1,8 @@
 ---
 author: "Yufeng Gu"
-title: "Boost AI with Two Pillars: Efficient Model and Faster Memory"
+title: "Boost AI with Two Pillars: Efficient Model and Memory Architecture"
 date: 2025-08-03T08:37:58+08:00
+description: "I would like to thank Alireza Khadem for sharing resources in the field of efficient model optimizations."
 ShowToc: true
 TocOpen: false
 ---
@@ -15,11 +16,13 @@ These challenges have prompted a wave of innovation from both AI researchers and
 
 ## **Model Optimization Techniques**
 
-Modern AI models can be optimized to run faster and use less memory *without* fundamentally changing their outputs. These model-side optimizations are critical for deploying LLMs and other transformers at scale. They include making the model weights more compact via **quantization**, eliminating redundant computations via **sparsity and pruning**, using smarter **attention patterns** for long sequences, and speeding up the **decoding strategy** itself. Many of these techniques can dramatically cut down memory usage or computation, helping mitigate the inherent inefficiency of sequential decoding.
+Modern AI models can be optimized to run faster and use less memory *without* fundamentally changing their outputs. These model-side optimizations are critical for deploying LLMs at both datacenter and edge scenarios. They include making the model weights (and activations) more compact via **quantization**, eliminating redundant computations via **sparsity and pruning**, using smarter **attention patterns** for long sequences, and speculative **decoding strategy**. Many of these techniques can dramatically cut down memory usage and/or computation.
 
-### **Quantization: Smaller Numbers, Faster Inference**
+### **Quantization**
 
-**Quantization** is one of the most powerful tools for model compression. It means reducing the precision of the numbers used to represent neural network parameters (and sometimes activations), for example using 8-bit or 4-bit integers instead of 16-bit or 32-bit floats. By quantizing a large language model’s weights, we can *significantly shrink* its memory footprint and even speed up computation, since more of the model can fit in fast on-chip memory and integer math can be faster on some hardware. Recent advances show it’s possible to compress even 175-billion-parameter models down to 3–4 bits per weight with minimal loss in accuracy – a 2–4× speedup in GPT-class model inference has been reported when using high-end GPUs with quantized weights.
+Quantization reduces the precision of the numbers used to represent neural network parameters (and sometimes activations), for example using 8-bit or 4-bit integers instead of 16-bit or 32-bit floats. By quantizing model weights, we can *significantly shrink* its memory footprint and even speed up computation, since more of the model can fit in fast on-chip memory and integer math can be faster on some hardware. 
+
+<!-- Recent advances show it’s possible to compress even 175-billion-parameter models down to 3–4 bits per weight with minimal loss in accuracy – a 2–4× speedup in GPT-class model inference has been reported when using high-end GPUs with quantized weights. -->
 
 * **What to quantize?** Early efforts often focused on *weight-only quantization*, which quantizes the model’s learned parameters but still computes with high-precision activations. Weight-only schemes (e.g. GPTQ) directly reduce model size and memory load. Newer methods also quantize activations (and even the *KV cache* in LLM decoders), achieving further gains by cutting memory and arithmetic for intermediate values. This **weight+activation quantization** is more challenging (since low-precision activations can hurt model quality), but techniques like **SmoothQuant** (which rescales layers to make activation ranges easier to quantize) have enabled 8-bit or 4-bit activations with limited accuracy loss. Weight-only quantization mainly saves memory, whereas quantizing both weights and activations slashes *compute* and memory, offering multiplicative speed-ups.
 
