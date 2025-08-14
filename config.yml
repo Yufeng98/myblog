@@ -168,7 +168,7 @@ params:
   homeInfoParams:
     Title: "Yufeng's Blog"
     Content: >
-      👋 Welcome to Yufeng's blog.
+      👋 Welcome to Yufeng's blog. Please see my [webpage](https://yufeng98.github.io/) for more information.
 
   socialIcons:
     - name: github
