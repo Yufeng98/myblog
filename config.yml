@@ -12,7 +12,7 @@ buildFuture: false
 buildExpired: false
 enableEmoji: true
 pygmentsUseClasses: true
-mainsections: ["posts", "papermod"]
+# mainsections: ["posts", "papermod"]
 
 minify:
   disableXML: true
@@ -134,7 +134,7 @@ params:
   env: production # to enable google analytics, opengraph, twitter-cards and schema.
   description: "Yufeng's Blog"
   author: Yufeng Gu
-  # author: ["Me", "You"] # multiple authors
+  math: true
 
   defaultTheme: auto
   # disableThemeToggle: true

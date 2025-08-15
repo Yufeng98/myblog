@@ -486,3 +486,5 @@ Push commit. Add `-u` when pushing for the first time.
 ```shell
 git push -u origin master
 ```
+
+To support math formula, follow this [issue](https://github.com/adityatelange/hugo-PaperMod/issues/236).

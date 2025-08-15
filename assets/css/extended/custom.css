@@ -22,10 +22,31 @@ body {
 }
 
 figure {
-  text-align: center;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
 }
 
-figcaption {
-  font-size: 0.9em;
-  color: gray;
+figure img {
+    display: block;
+    margin: auto;
+    max-width: 800px;
+}
+
+figure figcaption {
+    color: gray !important;
+    text-align: center !important;
+}
+
+/* Increase page width */
+.main {
+    max-width: 900px; /* Increase from default (usually 720px-800px) */
+}
+
+.post-content {
+    max-width: 900px; /* Adjust content width */
+}
+
+.post-header {
+    max-width: 900px; /* Adjust header width */
 }

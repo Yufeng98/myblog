@@ -30,8 +30,8 @@ Quantization reduces the precision of the numbers used to represent neural netwo
 **weight-only quantization** quantizes the model’s learned parameters but still computes with high-precision activations. These approaches directly reduces model size and memory load. Other approaches also quantize activations (and even the *KV cache* in LLM decoders), achieving further gains by cutting memory and arithmetic for intermediate values at the cost of potential accuracy degragation.
 
 <figure>
-  <img src="images/What-to-quantize.png" alt="Alt text" width="600">
-  <figcaption>Figure 1: Weight-only Quantization and Weight-Activation Quantization. Figure source: <a href=https://arxiv.org/abs/2410.04466> https://arxiv.org/abs/2410.04466</a> </figcaption>
+  <img src="../../Boost-AI-with-Two-Pillars/images/What-to-quantize.png" alt="Alt text" width="800">
+  <figcaption style="color: gray; text-align: center;">Figure 1: Weight-only and Weight-Activation Quantization. Figure source: https://arxiv.org/abs/2410.04466</figcaption>
 </figure>
 
 
@@ -45,36 +45,36 @@ Quantization can be catergorized as *Uniform* and *Non-uniform* approaches. Unif
 
 <figure>
   <div style="display: flex; justify-content: center; gap: 10px;">
-    <img src="images/Asymatric-quantization.png" alt="Asymatric quantization" width="50%">
-    <img src="images/Symmetric-quantization.png" alt="Symatric quantization" width="50%">
+    <img src="../../Boost-AI-with-Two-Pillars/images/Asymatric-quantization.png" alt="Asymatric quantization" width="50%">
+    <img src="../../Boost-AI-with-Two-Pillars/images/Symmetric-quantization.png" alt="Symatric quantization" width="50%">
   </div>
-  <figcaption>Figure 2: Asymatric quantization and Symatric quantization. Figure source: <a href=https://huggingface.co/blog/Isayoften/optimization-rush> https://huggingface.co/blog/Isayoften/optimization-rush</a></figcaption>
+  <figcaption style="color: gray; text-align: center;">Figure 2: Asymatric and Symatric Quantization. Figure source: https://huggingface.co/blog/Isayoften/optimization-rush</figcaption>
 </figure>
 
 The quantization range is determined by the maximum absolute value of the data. The quantization process involves the scaling (S) and shifting (Z) stages. The scaling factor is determined by the range of both source and target ranges. Symmetric quantization skips shifting. The de-quantization process is implemented by reverse shifting and scaling.
 
 **Asymmetric**
 
-- \( S = \frac{r_{\text{max}} - r_{\text{min}}}{q_{\text{max}} - q_{\text{min}}} \)
-- \( Z = \left[ q_{\text{min}} - \frac{r_{\text{min}}}{S} \right] \)
-- \( X_{\text{quantized}} = \left[ \frac{X}{S} + Z \right] \)
-- \( X_{\text{dequantized}} = S \left( X_{\text{quantized}} - Z \right) \)
+- $ S = \frac{r_{\text{max}} - r_{\text{min}}}{q_{\text{max}} - q_{\text{min}}} $
+- $ Z = \left[ q_{\text{min}} - \frac{r_{\text{min}}}{S} \right] $
+- $ X_{\text{quantized}} = \left[ \frac{X}{S} + Z \right] $
+- $ X_{\text{dequantized}} = S \left( X_{\text{quantized}} - Z \right) $
 
 ---
 
 **Symmetric**
 
-- \( S = \frac{|r|_{\text{max}}}{2^{N-1} - 1} \)
-- \( Z = 0 \)
-- \( X_{\text{quantized}} = \left[ \frac{X}{S} \right] \)
-- \( X_{\text{dequantized}} = S X_{\text{quantized}} \)
+- $ S = \frac{|r|_{\text{max}}}{2^{N-1} - 1} $
+- $ Z = 0 $
+- $ X_{\text{quantized}} = \left[ \frac{X}{S} \right] $
+- $ X_{\text{dequantized}} = S X_{\text{quantized}} $
 
 
 Non-uniform quantization is more flexible, borrowing the idea of floating point number. Dynamic tree quantization (DTQ) is a non-linear 8-bit quantization scheme designed to keep errors low for both very small and very large magnitudes. Instead of a fixed split between “exponent” and “fraction” bits, DTQ allows for adjustable split: (1) The first bit of the data type is reserved for a sign. (2) The number of subsequent zero bits indicates the magnitude of the exponent. (3) The first bit that is set to one indicates that all following values are reserved for (4) linear quantization.
 
 <figure>
-  <img src="images/Dynamic-tree-quantization.png" alt="Alt text" width="300">
-  <figcaption>Figure 3: Dynamic Tree Quantization. Figure source: <a href=https://ar5iv.labs.arxiv.org/html/2110.02861> https://ar5iv.labs.arxiv.org/html/2110.02861</a> </figcaption>
+  <img src="../../Boost-AI-with-Two-Pillars/images/Dynamic-tree-quantization.png" alt="Alt text" width="400" style="margin: auto;">
+  <figcaption style="color: gray; text-align: center;">Figure 3: Dynamic Tree Quantization. Figure source: https://ar5iv.labs.arxiv.org/html/2110.02861</figcaption>
 </figure>
 
 Outliers affect quantization accuracy. Tensors may have 0.01-0.1% of values with very large absolute values. Calculating the scaling factor with these outliers reduces the precision of the remaining values with small absolute. Below we introduces a few advanced approaches to address the outlier issue. 
@@ -83,8 +83,8 @@ Outliers affect quantization accuracy. Tensors may have 0.01-0.1% of values with
 **LLM.int8** keeps “outlier” activation channels and the corresponding weights in 16-bit to enable 8-bit inference with negligible loss. 
 
 <figure>
-  <img src="images/LLM-int8.png" alt="Alt text" width="600">
-  <figcaption>Figure 4: LLM.int8 Quantization. Figure source: <a href=https://arxiv.org/abs/2208.07339> https://arxiv.org/abs/2208.07339</a> </figcaption>
+  <img src="../../Boost-AI-with-Two-Pillars/images/LLM-int8.png" alt="Alt text" width="800">
+  <figcaption style="color: gray; text-align: center;">Figure 4: LLM.int8 Quantization. Figure source: https://arxiv.org/abs/2208.07339</figcaption>
 </figure>
 
 
@@ -93,10 +93,10 @@ Outliers affect quantization accuracy. Tensors may have 0.01-0.1% of values with
 
 <figure>
   <div style="display: flex; justify-content: center; gap: 10px;">
-    <img src="images/LoRA.png" alt="Asymatric quantization" width="30%">
-    <img src="images/QLoRA.png" alt="Symatric quantization" width="70%">
+    <img src="../../Boost-AI-with-Two-Pillars/images/LoRA.png" alt="Asymatric quantization" width="30%">
+    <img src="../../Boost-AI-with-Two-Pillars/images/QLoRA.png" alt="Symatric quantization" width="70%">
   </div>
-  <figcaption>Figure 5: LoRA and QLoRA. Figure source: <a href=https://arxiv.org/abs/2106.09685> https://https://arxiv.org/abs/2106.09685</a> and <a href=https://arxiv.org/abs/2305.14314> https://arxiv.org/abs/2305.14314</a></figcaption>
+  <figcaption style="color: gray; text-align: center;">Figure 5: LoRA and QLoRA. Figure source:  https://https://arxiv.org/abs/2106.09685 and https://arxiv.org/abs/2305.14314</figcaption>
 </figure>
 
 
@@ -104,37 +104,74 @@ Other notable methods include **SmoothQuant** (which smooths out activation magn
 
 **SmoothQuant** is an 8-bit weight, 8-bit activation (W8A8) post training quantization (PTQ) for LLMs. Based on the fact that weights are easy to quantize while activations are not, SmoothQuant smooths the activation outliers by offline migrating the quantization difficulty from activations to weights with a mathematically equivalent transformation, as shown in the formula and figures as follows.
 
-\[
+$$
 \mathbf{Y} = \left( \mathbf{X} \, \mathrm{diag}(\mathbf{s})^{-1} \right) \cdot \left( \mathrm{diag}(\mathbf{s}) \, \mathbf{W} \right) = \hat{\mathbf{X}} \, \hat{\mathbf{W}}
-\]
+$$
 
 
 <figure>
-  <img src="images/SmoothQuant.png" alt="Alt text" width="300">
-  <figcaption>Figure 6: SmoothQuant Quantization. Figure source: <a href=https://arxiv.org/abs/2211.10438> https://arxiv.org/abs/2211.10438</a> </figcaption>
+  <img src="../../Boost-AI-with-Two-Pillars/images/SmoothQuant.png" alt="Alt text" width="400" style="margin: auto;">
+  <figcaption style="color: gray; text-align: center;">Figure 6: SmoothQuant Quantization. Figure source: https://arxiv.org/abs/2211.10438 </figcaption>
 </figure>
 
-**AWQ (Activation-Aware Weight Quantization)** identifies a small fraction (\~1%) of “salient” weights that have outsized impact on activations and keeps those in higher precision (e.g. FP16), quantizing the rest. But this exerts challenges for mixed-precision execution on hardware. Instead of keeping in higher precision, AWQ’s hardware-friendly design multiplies these salient weights with a scaling factor (>1) before quantization, reducing the accuracy degradation on which. 
+**AWQ (Activation-Aware Weight Quantization)** identifies a small fraction (\~1%) of “salient” weights that have outsized impact on activations and keeps those in higher precision (e.g. FP16), quantizing the rest. But this exerts challenges for mixed-precision execution on hardware. Instead of keeping in higher precision, AWQ’s hardware-friendly design multiplies these salient weights with a scaling factor (s>1) before quantization, reducing the accuracy degradation on which, as shown in the formula and figures as follows. 
+
+$$
+Q(\mathbf{w}) = \Delta \cdot \mathrm{Round}\left( \frac{\mathbf{w}}{\Delta} \right), 
+\quad \Delta = \frac{\max(|\mathbf{w}|)}{2^{N-1}}
+$$
+
+
+where $N$ is the number of quantization bits, and $\Delta$ is the quantization scaler determined by the absolute maximum value. Now consider a weight element $w \in \mathbf{w}$, if we multiply $w$ with $s > 1$ and inversely scale $x$, we will have $Q(w \cdot s)(x/s)$, which is:  
+
+$$
+Q(w \cdot s) \cdot \frac{x}{s} 
+= \Delta' \cdot \mathrm{Round}\left( \frac{w s}{\Delta'} \right) \cdot x \cdot \frac{1}{s}
+$$
+
+where $\Delta'$ is the new quantization scaler after applying $s$.
 
 
 <figure>
-  <img src="images/AWQ.png" alt="Alt text" width="600">
-  <figcaption>Figure 7: Activation-aware Weight Quantization. Figure source: <a href=https://arxiv.org/abs/2306.00978> https://arxiv.org/abs/2306.00978</a> </figcaption>
+  <img src="../../Boost-AI-with-Two-Pillars/images/AWQ.png" alt="Alt text" width="800">
+  <figcaption style="color: gray; text-align: center;">Figure 7: Activation-aware Weight Quantization. Figure source: https://arxiv.org/abs/2306.00978</figcaption>
 </figure>
 
 
-**SpinQuant** introduced the idea of learning rotation matrices to transform weight space before quantization, narrowing the accuracy gap even at 4-bit weight+activation settings. In summary, a mix of clever math and training tricks now allows aggressive quantization (4-bit or even 3-bit) on LLMs, yielding *4–8×* memory reduction and proportional speedups with minimal impact on model performance.
-
-### **Sparsity and Pruning: Less Can Be More**
+**SpinQuant** introduces the idea of learning rotation matrices to transform weight space before quantization, narrowing the accuracy gap even at 4-bit weight+activation settings. Rotating activation or weight matrices helps remove outliers and benefits quantization. Paired rotation matrices can be merged into corresponding weight matrices, such as $R_1$ and $R_1^{-1}$. After absorption, no new parameters are introduced in the network without impacting the network's quality. The Hadamard matrix, such as $R_3$, can be inserted as the unabsorbed rotation matrix when low-bit KV cache quantization is required.
 
 
-[Source](https://arxiv.org/abs/2405.16406): SpinQuant: LLM Quantization with Learned Rotations, ICLR 2025.
+<figure>
+  <img src="../../Boost-AI-with-Two-Pillars/images/SpinQuant.png" alt="Alt text" width="800">
+  <figcaption style="color: gray; text-align: center;">Figure 8: SpinQuant Quantization. Figure source: https://arxiv.org/abs/2405.16406</figcaption>
+</figure>
+
+### Sparsity and Pruning
+
+
 [Source](https://arxiv.org/abs/2006.05525): Knowledge Distillation: A Survey
 [Source](https://arxiv.org/abs/2104.08378): Accelerating Sparse Deep Neural Networks
-[Source](https://arxiv.org/abs/1811.03115): Blockwise Parallel Decoding for Deep Autoregressive Models
 
 
-Another major avenue is making the model *sparse*: eliminating or skipping redundant computations. Deep networks have more parameters than needed, and many weights can be zeroed out (pruned) without much loss in accuracy. If done right, this means we don’t waste time multiplying by zeros. **Structured sparsity** in particular targets a regular pattern of zeros that hardware can exploit. A prime example is NVIDIA’s **2:4 structured sparsity**: in each group of 4 weight values, **2 are forced to zero**, yielding a 50% sparse weight matrix that hardware can compress and accelerate. The A100 GPU’s Tensor Cores support this pattern, effectively doubling math throughput by skipping the zero multiplies. Importantly, NVIDIA showed a simple one-shot pruning (removing the smaller weights in each 4-group) followed by fine-tuning can achieve this 2:4 sparsity *with no loss in accuracy* in many networks. With support in TensorRT and CUDA libraries, structured sparsity can give \~1.5–2× inference speedups in practice for transformer models, since half the operations are saved and the hardware runs 2× faster on the remaining nonzeros.
+Another major avenue is making the model *sparse*: eliminating or skipping redundant computations. Deep neural networks have more parameters than needed, and many weights can be zeroed out (pruned) without much loss in accuracy. If done right, this means we don’t waste time multiplying by zeros. 
+
+#### Structured sparsity
+
+Structured sparsity in particular targets a regular pattern of zeros that hardware can exploit. A prime example is NVIDIA’s **2:4 structured sparsity**: in each group of 4 weight values, 2 are forced to zero, yielding a 50% sparse weight matrix that hardware can compress and accelerate. This tehnique effectively doubles tensor core throughput by skipping the zero multiplies.
+
+
+<figure>
+  <img src="../../Boost-AI-with-Two-Pillars/images/Structured-sparsity.png" alt="Alt text" width="600" style="margin:auto;">
+  <figcaption style="color: gray; text-align: center;">Figure 9: 2:4 Structured Sparsity. Figure source: https://arxiv.org/abs/1811.03115</figcaption>
+</figure>
+
+
+<figure>
+  <img src="../../Boost-AI-with-Two-Pillars/images/Structured-sparsity-compute.png" alt="Alt text" width="800">
+  <figcaption style="color: gray; text-align: center;">Figure 10: Sparse Matrix-Multiply (SpMM) on NVIDIA's Tensor. Figure source: https://arxiv.org/abs/1811.03115</figcaption>
+</figure>
+
+#### Sparse Attention
 
 Beyond weights, we can also introduce sparsity in the **attention computation** – a crucial strategy for long sequences. Full self-attention scales quadratically with sequence length, which is infeasible beyond a few thousands of tokens. **Sparse attention mechanisms** restrict each token to attending to only a subset of other tokens (e.g. a local window or random set), achieving linear or *O*(n·log n) complexity while often maintaining similar accuracy to full attention. Models like **Longformer** and **BigBird** pioneered this idea for long texts, using combinations of local windows and global summary tokens so that each token doesn’t attend to everything. These sparse-attention transformers can handle input sequences 10× longer with comparable accuracy to dense attention. In fact, Microsoft’s DeepSpeed library implemented a **Sparse Attention** suite that supports flexible block-sparse patterns and showed up to *6× faster* attention and 10× longer context lengths using these techniques. The DeepSpeed kernels allow mixing local, global, and random attention patterns efficiently, alleviating memory bottlenecks for long context lengths.
 
@@ -144,13 +181,23 @@ Another type of structured sparsity is the *N\:M fine-grained sparsity* (like 2:
 
 In summary, inducing sparsity – whether in the weight matrices or in the attention patterns – can drastically reduce the compute and memory needs. Industry hardware (NVIDIA Ampere/Hopper, etc.) already supports certain sparse patterns, making this a practical path to faster inference. We expect continued improvements in algorithms for selecting which weights or attention entries to prune (possibly guided by learning, as in some recent lottery ticket and N\:M mask learning studies), pushing the limits of sparsity without sacrificing model accuracy.
 
-### **Rethinking Attention and Decoding**
+### **Speculative Decoding**
 
 Beyond pruning or compressing existing models, researchers are also inventing new inference-time techniques and architectures that sidestep the fundamental latency issues of autoregressive decoding. Two notable directions are using *draft models for faster decoding* and restructuring transformer layers or heads to share work.
 
 **Speculative decoding** is a recent technique that *trades extra compute for much less latency*. The idea is to run a small “draft” model to generate several tokens ahead, and then have the large model quickly verify or correct that draft in one go. Because the big model no longer generates every token sequentially by itself, several tokens can be obtained in parallel. Google first demonstrated speculative decoding in 2022, showing **2–3× faster generation** with no quality loss, since the large model’s output distribution is provably unchanged by this process. Essentially, it guarantees the same results as standard decoding, just faster – a rare free lunch. This method has since been adopted in production at Google (for example, speeding up Bard and Search AI results) and elsewhere. IBM researchers similarly reported that speculative decoding can significantly lower inference cost by using a cheaper model to accelerate a more expensive one. In practical terms, a user might perceive much snappier responses (latency cut in half or better) because the system is leveraging two models in parallel to generate the text. As LLMs grow even larger, such two-model setups that *facilitate parallel token generation* will be an important strategy to meet real-time application needs.
 
-Another line of research modifies the *transformer architecture* itself for efficiency. For example, some works investigate **cross-layer attention**, where instead of each layer attending only within itself, lower layers might directly attend to the outputs of higher layers or vice versa – potentially reducing redundant computations across layers. Similarly, **multi-head latent attention** aims to factorize or reduce the cost of having many attention heads, by finding a smaller latent representation that still captures the diversity of heads. (These latter ideas are still experimental, and specific techniques are under active study, so while we won’t delve into detailed citations here, they represent the forward-looking attempts to redesign transformers for efficiency.)
+### Efficient Attention
+
+#### Grouped-query Attention
+
+#### Cross-layer Attention
+
+Another line of research modifies the *transformer architecture* itself for efficiency. For example, some works investigate **cross-layer attention**, where instead of each layer attending only within itself, lower layers might directly attend to the outputs of higher layers or vice versa – potentially reducing redundant computations across layers. 
+
+#### Multi-head Latent Attention
+
+Similarly, **multi-head latent attention** aims to factorize or reduce the cost of having many attention heads, by finding a smaller latent representation that still captures the diversity of heads. (These latter ideas are still experimental, and specific techniques are under active study, so while we won’t delve into detailed citations here, they represent the forward-looking attempts to redesign transformers for efficiency.)
 
 Lastly, a simple but powerful idea in inference serving is to optimize *how we batch and schedule decode steps*. Techniques like **continuous batching** and efficient scheduling (as implemented in libraries like HuggingFace’s text-generation-inference or DeepSpeed’s inference engine) ensure that whenever multiple requests are waiting for a next token, they are processed together on the GPU. This amortizes overhead and keeps utilization high. The **vLLM** serving system introduced PagedAttention (discussed more below) and also a scheduling algorithm to achieve near-perfect batching of concurrent decode steps, improving throughput substantially. These serve as software-level optimizations that complement the model tweaks described above.
 
@@ -207,24 +254,6 @@ As we move beyond 2025, we can expect these optimizations to continue and new on
 In summary, the quest for AGI is not just about making models *smarter*, but also making them *leaner and faster*. By standing on the two pillars of model and memory optimization – and by fostering collaboration between the “brains” (AI models) and the “brawn” (hardware) – we are steadily pushing the limits of what these systems can do, bringing the future of AI a little closer to the present.
 
 **References**
-<!-- 
-* Beltagy et al., *“Longformer: The Long-Document Transformer,”* 2020 – introduced local+global sparse attention for long texts.
-* Zaheer et al., *“Big Bird: Transformers for Longer Sequences,”* 2020 – another sparse attention model scaling to 8K+ tokens.
-* NVIDIA Technical Blog, *“Accelerating Inference with Sparsity (Ampere),”* 2021 – details on 2:4 structured sparsity and TensorRT integration.
-* AMD ROCm Blog, *“LLM inference optimizations on AMD GPUs,”* Aug. 2023 – discusses TTFT vs TPOT, memory-bound decoding on MI250 GPUs.
-* Frantar et al., *“GPTQ: Post-Training Quantization for Transformers,”* arXiv 2022 – quantized 175B GPT-3 to 3-bit weights with \~3–4× speedup.
-* Lin *et al.*, *“AWQ: Activation-Aware Quantization for LLMs,”* MIT 2023 – 4-bit weight quantization preserving top 0.1–1% weights in higher precision, 3.2× speedups vs FP16.
-* Dao *et al.*, *“FlashAttention: Fast and Memory-Efficient Exact Attention,”* NeurIPS 2022 – IO-aware attention tiling, O(n) memory, 2–3× faster on long seq..
-* Kwon *et al.*, *“Efficient LLM Serving with PagedAttention,”* SOSP 2023 – vLLM system, near-zero waste KV cache, 2–4× throughput improvement.
-* Google Research, *“Looking Back at Speculative Decoding,”* Dec. 2024 – blog post on 2–3× faster inference using a draft model without quality loss.
-* Zhong *et al.*, *“DistServe: Disaggregating Prefill and Decode for LLM Serving,”* arXiv 2024 – separates prompt encoding and generation across GPUs, improving goodput under latency constraints.
-* Xu *et al.*, *“XAttention: Block Sparse Attention with Antidiagonal Scoring,”* arXiv Mar 2025 – up to 13.5× faster long-context attention via block pruning.
-* Zhu *et al.*, *“MegaScale-Infer: Mixture-of-Experts with Disaggregated Parallelism,”* arXiv Jul 2025 – splits attention and FFN across specialized resources, 1.9× throughput gain.
-* Park *et al.*, *“AttAcc: PIM Acceleration for Transformer Attention,”* ASPLOS 2024 – HBM-PIM architecture to speed up batched attention in transformers.
-* IBM Research Blog, *“Speculative Decoding for Cheaper AI Inference,”* Aug. 2023 – overview of speculative decoding technique and benefits.
-* Panmnesia Inc., *“GPU Memory Expansion via CXL,”* CES 2025 – demonstrated unified GPU+CXL memory pool, adding external memory with \~80 ns latency.
-* Samsung Electronics, *“HBM-PIM: AI Processing in Memory,”* Feb. 2021 – press release on first HBM with built-in AI cores (FIMDRAM).
-* Microsoft Research Blog, *“DeepSpeed: Advancing Extreme-Scale Training,”* 2021 – sparse attention kernels enabling 10× sequence length, 6× faster execution. -->
 
 * Li *et al.*, [Large Language Model Inference Acceleration: A Comprehensive Hardware Perspective](https://arxiv.org/abs/2410.04466), arXiv Preprint.
 * Daniil Suhoi, [Efficient Deep Learning: A Comprehensive Overview of Optimization Techniques](https://huggingface.co/blog/Isayoften/optimization-rush), blog.
@@ -232,11 +261,13 @@ In summary, the quest for AGI is not just about making models *smarter*, but als
 * Dettmers *et al.*, [LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale](https://arxiv.org/2208.07339), NeurIPS 2022.
 * Hu *et al.*, [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685), ICRL 2022.
 * Dettmers *et al.*, [QLoRA: Efficient Finetuning of Quantized LLMs](https://arxiv.org/abs/2305.14314), NeurIPS 2023.
-* Xiao *et al.*, [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438), ICML 2023.
+* Lin *et al.*, [AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration](https://arxiv.org/abs/2306.00978) MLSys 2024
+* Xiao *et al.*, [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438), ICLR 2025.
+* Stern *et al.*, [Blockwise Parallel Decoding for Deep Autoregressive Models](https://arxiv.org/abs/1811.03115), arXiv Preprint.
 
 
-Lin *et al.*, [AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration](https://arxiv.org/abs/2306.00978) MLSys 2024
 * Leviathan *et al.*, [Fast Inference from Transformers via Speculative Decoding](https://arxiv.org/abs/2211.17192), ICML 2023.
 * Sadhukhan *et al.*, [MagicDec: Breaking the Latency-Throughput Tradeoff for Long Context Generation with Speculative Decoding](https://arxiv.org/abs/2408.11049), ICRL 2025.
+
 a target LLM speculates itself with a sparsified version of its own KV cache, then it can achieve
 acceptance rates higher than those of small draft models with a full KV cache.
