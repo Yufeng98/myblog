@@ -20,3 +20,12 @@ iframe {
 body {
     font-size: 16px;
 }
+
+figure {
+  text-align: center;
+}
+
+figcaption {
+  font-size: 0.9em;
+  color: gray;
+}

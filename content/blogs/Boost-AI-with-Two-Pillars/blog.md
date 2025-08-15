@@ -1,36 +1,138 @@
 ---
 author: "Yufeng Gu"
-title: "Boost AI with Two Pillars: Efficient Model and Memory Architecture"
+title: "Boost AI with Two Pillars: Efficient Model and Faster Memory"
 date: 2025-08-03T08:37:58+08:00
-description: "I would like to thank Alireza Khadem for sharing resources in the field of efficient model optimizations."
 ShowToc: true
 TocOpen: false
 ---
+
+
 
 Transformer-based LLMs have revolutionized AI, but their impressive capabilities are extremly resource-intensive during deployment, coming with two key bottlenecks. First, LLMs have large paramerter sizes (10-1000B) and supports long context lengths (128K-1M) today, which necessitates substantial compute and memory resources. Second, the autoregressive decoding process generates output tokens one after another, requiring extensive memory bandwidth.
 
 <!-- 
 A key challenge is the *autoregressive decoding* process, where tokens are generated one by one, which cannot be parallelized across output tokens. This sequential generation means that unlike the initial *prefill* phase, which encodes the input and can use large batched matrix multiplies, the decode phase processes tokens one by one, resulting in matrix-vector multiplies (GEMV) that keep re-reading model weights. In practice, each new token may require the model to read **gigabytes (even terabytes) of parameters from memory**, creating a heavy memory-bandwidth burden. As a result, LLM inference is often *memory-bound*: model weights on the order of 10–1000 GB must be fetched repeatedly from GPU memory (or beyond) for each token. Even attempts to batch multiple user queries together (turning GEMV into larger GEMM operations) quickly hit he memory capacity limits, especially for long context scenarios. In short, today’s large transformers are bottlenecked by memory throughput during decoding – they generate amazing results, but *slowly*. -->
 
-These challenges have prompted a wave of innovation from both AI researchers and computer architects. Numerous efforts are underway to boost LLM inference at two “pillars” supporting the next generation of AI: **(1) Efficient model optimizations**, which include techniques like quantization and sparsity to compress models or reduce computation, novel attention mechanisms and fast decoding methods; and **(2) Memory architecture optimizations**, which improve how data is stored, moved, and processed, from faster HBM, unified CPU/GPU memory access to processing-in/near-memory (PIM/PNM) approaches. Considering both “pillars”, **Hardware/Software co-designs** are also crutial for LLM deployment, where algorithm developers and hardware designers collaborate to tailor solutions that bridge the gap between model and hardware, such as specialized attention kernels and inference frameworks. 
+These challenges have prompted a wave of innovation from both AI researchers and computer architects. Numerous efforts are underway to boost LLM inference at two “pillars” supporting the next generation of AI: **(1) Efficient model optimizations**, which include techniques like quantization and sparsity to compress models or reduce computation, novel attention mechanisms and fast decoding methods; and **(2) Memory architecture optimizations**, which improve how data is stored, moved, and processed, from faster HBM to processing-in/near-memory (PIM/PNM) approaches. Considering both “pillars”, **Hardware/Software co-designs** are also crutial for LLM deployment, where algorithm developers and hardware designers collaborate to tailor solutions that bridge the gap between model and hardware, such as specialized attention kernels and inference frameworks. 
 
-## **Model Optimization Techniques**
+## Efficient Model Optimization Techniques
 
 Modern AI models can be optimized to run faster and use less memory *without* fundamentally changing their outputs. These model-side optimizations are critical for deploying LLMs at both datacenter and edge scenarios. They include making the model weights (and activations) more compact via **quantization**, eliminating redundant computations via **sparsity and pruning**, using smarter **attention patterns** for long sequences, and speculative **decoding strategy**. Many of these techniques can dramatically cut down memory usage and/or computation.
 
-### **Quantization**
+### Quantization
 
-Quantization reduces the precision of the numbers used to represent neural network parameters (and sometimes activations), for example using 8-bit or 4-bit integers instead of 16-bit or 32-bit floats. By quantizing model weights, we can *significantly shrink* its memory footprint and even speed up computation, since more of the model can fit in fast on-chip memory and integer math can be faster on some hardware. 
+Quantization reduces the precision of the numbers used to represent neural network parameters (and sometimes activations), for example using 8-bit or 4-bit integers instead of 16-bit or 32-bit floats. By quantizing model weights, LLMs can fit into the device with limited memory capacity. Meanwhile, quantization can significantly shrink its memory footprint and even speed up computation, since more of the model can fit in fast on-chip memory and integer math can be faster on some hardware. 
 
 <!-- Recent advances show it’s possible to compress even 175-billion-parameter models down to 3–4 bits per weight with minimal loss in accuracy – a 2–4× speedup in GPT-class model inference has been reported when using high-end GPUs with quantized weights. -->
 
-* **What to quantize?** Early efforts often focused on *weight-only quantization*, which quantizes the model’s learned parameters but still computes with high-precision activations. Weight-only schemes (e.g. GPTQ) directly reduce model size and memory load. Newer methods also quantize activations (and even the *KV cache* in LLM decoders), achieving further gains by cutting memory and arithmetic for intermediate values. This **weight+activation quantization** is more challenging (since low-precision activations can hurt model quality), but techniques like **SmoothQuant** (which rescales layers to make activation ranges easier to quantize) have enabled 8-bit or 4-bit activations with limited accuracy loss. Weight-only quantization mainly saves memory, whereas quantizing both weights and activations slashes *compute* and memory, offering multiplicative speed-ups.
+#### What to quantize? 
 
-* **When to quantize?** There are two approaches: **quantization-aware training (QAT)**, where the model is trained (or fine-tuned) with quantization in mind, versus **post-training quantization (PTQ)**, where we take a pre-trained model and quantize it in one go. QAT tends to produce the best results (since the model can adjust to low precision during training), but it is expensive – retraining a giant model is often impractical. PTQ is much more appealing for LLMs, and recent one-shot PTQ methods have made big strides. For example, **GPTQ** is a post-training method that uses a bit of second-order optimization to quantize weights layer by layer, closely matching the original model’s outputs. GPTQ can compress a 175B model to 3–4 bits in a few GPU-hours. Techniques like GPTQ and others have largely closed the gap, making PTQ viable even at very low bit-widths.
+**weight-only quantization** quantizes the model’s learned parameters but still computes with high-precision activations. These approaches directly reduces model size and memory load. Other approaches also quantize activations (and even the *KV cache* in LLM decoders), achieving further gains by cutting memory and arithmetic for intermediate values at the cost of potential accuracy degragation.
 
-* **How to quantize?** Advanced algorithms cleverly minimize the accuracy drop from quantization. **Non-uniform schemes** or grouped quantization adjust the scale per group of weights to better fit distributions. **GPTQ (Global Player)**, as noted, optimizes quantization error layer-wise. **AWQ (Activation-Aware Weight Quantization)** takes a different tack: it identifies a small fraction (\~1%) of “salient” weights that have outsized impact on activations and keeps those in higher precision (e.g. FP16), quantizing the rest. This mixed strategy preserves model quality by not compromising the most important weights. AWQ’s hardware-friendly design achieved state-of-the-art low-bit accuracy across various models and even enabled quantizing multi-modal models for the first time. Other notable methods include **SmoothQuant** (which smooths out activation magnitude differences between layers to improve 8-bit activation quantization), **LLM.int8()** (an earlier method that kept “outlier” activation channels in 16-bit to enable 8-bit inference with negligible loss), and **QLoRA**. QLoRA is a 4-bit quantization technique combined with low-rank adaptation for fine-tuning: it reduces memory enough to finetune a 65B model on a single GPU. By quantizing the base model to 4-bit and training a small low-rank residual, QLoRA can achieve full 16-bit finetuning quality. Most recently, **SpinQuant** introduced the idea of learning rotation matrices to transform weight space before quantization, narrowing the accuracy gap even at 4-bit weight+activation settings. In summary, a mix of clever math and training tricks now allows aggressive quantization (4-bit or even 3-bit) on LLMs, yielding *4–8×* memory reduction and proportional speedups with minimal impact on model performance.
+<figure>
+  <img src="images/What-to-quantize.png" alt="Alt text" width="600">
+  <figcaption>Figure 1: Weight-only Quantization and Weight-Activation Quantization. Figure source: <a href=https://arxiv.org/abs/2410.04466> https://arxiv.org/abs/2410.04466</a> </figcaption>
+</figure>
+
+
+#### When to quantize? 
+
+There are two approaches: **quantization-aware training (QAT)**, where the model is trained (or fine-tuned) with quantization in mind, versus **post-training quantization (PTQ)**, where we take a pre-trained model and quantize it in one go. QAT tends to produce the best results, since the model can adjust to low precision during training. PTQ is cheaper due to the one-time quantization nature.
+
+#### How to quantize?
+
+Quantization can be catergorized as *Uniform* and *Non-uniform* approaches. Uniform quantization divides the entire range of values into equally sized intervals, which is simple but can lead to information loss when values are unevenly distributed. In contrast, non-uniform method divides the entire range of value into varying-sized intervals based on the value distribution. The uniform quantization further includes Symmetric and Asymmetric variants, with figure and formula shown as follows. 
+
+<figure>
+  <div style="display: flex; justify-content: center; gap: 10px;">
+    <img src="images/Asymatric-quantization.png" alt="Asymatric quantization" width="50%">
+    <img src="images/Symmetric-quantization.png" alt="Symatric quantization" width="50%">
+  </div>
+  <figcaption>Figure 2: Asymatric quantization and Symatric quantization. Figure source: <a href=https://huggingface.co/blog/Isayoften/optimization-rush> https://huggingface.co/blog/Isayoften/optimization-rush</a></figcaption>
+</figure>
+
+The quantization range is determined by the maximum absolute value of the data. The quantization process involves the scaling (S) and shifting (Z) stages. The scaling factor is determined by the range of both source and target ranges. Symmetric quantization skips shifting. The de-quantization process is implemented by reverse shifting and scaling.
+
+**Asymmetric**
+
+- \( S = \frac{r_{\text{max}} - r_{\text{min}}}{q_{\text{max}} - q_{\text{min}}} \)
+- \( Z = \left[ q_{\text{min}} - \frac{r_{\text{min}}}{S} \right] \)
+- \( X_{\text{quantized}} = \left[ \frac{X}{S} + Z \right] \)
+- \( X_{\text{dequantized}} = S \left( X_{\text{quantized}} - Z \right) \)
+
+---
+
+**Symmetric**
+
+- \( S = \frac{|r|_{\text{max}}}{2^{N-1} - 1} \)
+- \( Z = 0 \)
+- \( X_{\text{quantized}} = \left[ \frac{X}{S} \right] \)
+- \( X_{\text{dequantized}} = S X_{\text{quantized}} \)
+
+
+Non-uniform quantization is more flexible, borrowing the idea of floating point number. Dynamic tree quantization (DTQ) is a non-linear 8-bit quantization scheme designed to keep errors low for both very small and very large magnitudes. Instead of a fixed split between “exponent” and “fraction” bits, DTQ allows for adjustable split: (1) The first bit of the data type is reserved for a sign. (2) The number of subsequent zero bits indicates the magnitude of the exponent. (3) The first bit that is set to one indicates that all following values are reserved for (4) linear quantization.
+
+<figure>
+  <img src="images/Dynamic-tree-quantization.png" alt="Alt text" width="300">
+  <figcaption>Figure 3: Dynamic Tree Quantization. Figure source: <a href=https://ar5iv.labs.arxiv.org/html/2110.02861> https://ar5iv.labs.arxiv.org/html/2110.02861</a> </figcaption>
+</figure>
+
+Outliers affect quantization accuracy. Tensors may have 0.01-0.1% of values with very large absolute values. Calculating the scaling factor with these outliers reduces the precision of the remaining values with small absolute. Below we introduces a few advanced approaches to address the outlier issue. 
+
+
+**LLM.int8** keeps “outlier” activation channels and the corresponding weights in 16-bit to enable 8-bit inference with negligible loss. 
+
+<figure>
+  <img src="images/LLM-int8.png" alt="Alt text" width="600">
+  <figcaption>Figure 4: LLM.int8 Quantization. Figure source: <a href=https://arxiv.org/abs/2208.07339> https://arxiv.org/abs/2208.07339</a> </figcaption>
+</figure>
+
+
+**QLoRA** is a 4-bit quantization technique combined with low-rank adaptation (LoRA) for fine-tuning. During parameter efficient fine-tuning (PEFT), the forward pass goes through both the pretrained weights and a low-rank adaptor, while the backward pass is only applied on the low-rank adaptor. The trained adaptor is updated to the pretrained weights, therefore significantly reducing the trainable parameters. In QLoRA, the base model is quantized into 4-bit and loses accuracy, but the 16-bit LoRA fine-tuning process can compensate for the accuracy degradation during quantization.
+
+
+<figure>
+  <div style="display: flex; justify-content: center; gap: 10px;">
+    <img src="images/LoRA.png" alt="Asymatric quantization" width="30%">
+    <img src="images/QLoRA.png" alt="Symatric quantization" width="70%">
+  </div>
+  <figcaption>Figure 5: LoRA and QLoRA. Figure source: <a href=https://arxiv.org/abs/2106.09685> https://https://arxiv.org/abs/2106.09685</a> and <a href=https://arxiv.org/abs/2305.14314> https://arxiv.org/abs/2305.14314</a></figcaption>
+</figure>
+
+
+Other notable methods include **SmoothQuant** (which smooths out activation magnitude differences between layers to improve 8-bit activation quantization), 
+
+**SmoothQuant** is an 8-bit weight, 8-bit activation (W8A8) post training quantization (PTQ) for LLMs. Based on the fact that weights are easy to quantize while activations are not, SmoothQuant smooths the activation outliers by offline migrating the quantization difficulty from activations to weights with a mathematically equivalent transformation, as shown in the formula and figures as follows.
+
+\[
+\mathbf{Y} = \left( \mathbf{X} \, \mathrm{diag}(\mathbf{s})^{-1} \right) \cdot \left( \mathrm{diag}(\mathbf{s}) \, \mathbf{W} \right) = \hat{\mathbf{X}} \, \hat{\mathbf{W}}
+\]
+
+
+<figure>
+  <img src="images/SmoothQuant.png" alt="Alt text" width="300">
+  <figcaption>Figure 6: SmoothQuant Quantization. Figure source: <a href=https://arxiv.org/abs/2211.10438> https://arxiv.org/abs/2211.10438</a> </figcaption>
+</figure>
+
+**AWQ (Activation-Aware Weight Quantization)** identifies a small fraction (\~1%) of “salient” weights that have outsized impact on activations and keeps those in higher precision (e.g. FP16), quantizing the rest. But this exerts challenges for mixed-precision execution on hardware. Instead of keeping in higher precision, AWQ’s hardware-friendly design multiplies these salient weights with a scaling factor (>1) before quantization, reducing the accuracy degradation on which. 
+
+
+<figure>
+  <img src="images/AWQ.png" alt="Alt text" width="600">
+  <figcaption>Figure 7: Activation-aware Weight Quantization. Figure source: <a href=https://arxiv.org/abs/2306.00978> https://arxiv.org/abs/2306.00978</a> </figcaption>
+</figure>
+
+
+**SpinQuant** introduced the idea of learning rotation matrices to transform weight space before quantization, narrowing the accuracy gap even at 4-bit weight+activation settings. In summary, a mix of clever math and training tricks now allows aggressive quantization (4-bit or even 3-bit) on LLMs, yielding *4–8×* memory reduction and proportional speedups with minimal impact on model performance.
 
 ### **Sparsity and Pruning: Less Can Be More**
+
+
+[Source](https://arxiv.org/abs/2405.16406): SpinQuant: LLM Quantization with Learned Rotations, ICLR 2025.
+[Source](https://arxiv.org/abs/2006.05525): Knowledge Distillation: A Survey
+[Source](https://arxiv.org/abs/2104.08378): Accelerating Sparse Deep Neural Networks
+[Source](https://arxiv.org/abs/1811.03115): Blockwise Parallel Decoding for Deep Autoregressive Models
+
 
 Another major avenue is making the model *sparse*: eliminating or skipping redundant computations. Deep networks have more parameters than needed, and many weights can be zeroed out (pruned) without much loss in accuracy. If done right, this means we don’t waste time multiplying by zeros. **Structured sparsity** in particular targets a regular pattern of zeros that hardware can exploit. A prime example is NVIDIA’s **2:4 structured sparsity**: in each group of 4 weight values, **2 are forced to zero**, yielding a 50% sparse weight matrix that hardware can compress and accelerate. The A100 GPU’s Tensor Cores support this pattern, effectively doubling math throughput by skipping the zero multiplies. Importantly, NVIDIA showed a simple one-shot pruning (removing the smaller weights in each 4-group) followed by fine-tuning can achieve this 2:4 sparsity *with no loss in accuracy* in many networks. With support in TensorRT and CUDA libraries, structured sparsity can give \~1.5–2× inference speedups in practice for transformer models, since half the operations are saved and the hardware runs 2× faster on the remaining nonzeros.
 
@@ -105,7 +207,7 @@ As we move beyond 2025, we can expect these optimizations to continue and new on
 In summary, the quest for AGI is not just about making models *smarter*, but also making them *leaner and faster*. By standing on the two pillars of model and memory optimization – and by fostering collaboration between the “brains” (AI models) and the “brawn” (hardware) – we are steadily pushing the limits of what these systems can do, bringing the future of AI a little closer to the present.
 
 **References**
-
+<!-- 
 * Beltagy et al., *“Longformer: The Long-Document Transformer,”* 2020 – introduced local+global sparse attention for long texts.
 * Zaheer et al., *“Big Bird: Transformers for Longer Sequences,”* 2020 – another sparse attention model scaling to 8K+ tokens.
 * NVIDIA Technical Blog, *“Accelerating Inference with Sparsity (Ampere),”* 2021 – details on 2:4 structured sparsity and TensorRT integration.
@@ -122,4 +224,19 @@ In summary, the quest for AGI is not just about making models *smarter*, but als
 * IBM Research Blog, *“Speculative Decoding for Cheaper AI Inference,”* Aug. 2023 – overview of speculative decoding technique and benefits.
 * Panmnesia Inc., *“GPU Memory Expansion via CXL,”* CES 2025 – demonstrated unified GPU+CXL memory pool, adding external memory with \~80 ns latency.
 * Samsung Electronics, *“HBM-PIM: AI Processing in Memory,”* Feb. 2021 – press release on first HBM with built-in AI cores (FIMDRAM).
-* Microsoft Research Blog, *“DeepSpeed: Advancing Extreme-Scale Training,”* 2021 – sparse attention kernels enabling 10× sequence length, 6× faster execution.
+* Microsoft Research Blog, *“DeepSpeed: Advancing Extreme-Scale Training,”* 2021 – sparse attention kernels enabling 10× sequence length, 6× faster execution. -->
+
+* Li *et al.*, [Large Language Model Inference Acceleration: A Comprehensive Hardware Perspective](https://arxiv.org/abs/2410.04466), arXiv Preprint.
+* Daniil Suhoi, [Efficient Deep Learning: A Comprehensive Overview of Optimization Techniques](https://huggingface.co/blog/Isayoften/optimization-rush), blog.
+* Dettmers *et al.*, [8-bit Optimizers via Block-wise Quantization](https://ar5iv.labs.arxiv.org/html/2110.02861), ICLR 2022.
+* Dettmers *et al.*, [LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale](https://arxiv.org/2208.07339), NeurIPS 2022.
+* Hu *et al.*, [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685), ICRL 2022.
+* Dettmers *et al.*, [QLoRA: Efficient Finetuning of Quantized LLMs](https://arxiv.org/abs/2305.14314), NeurIPS 2023.
+* Xiao *et al.*, [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438), ICML 2023.
+
+
+Lin *et al.*, [AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration](https://arxiv.org/abs/2306.00978) MLSys 2024
+* Leviathan *et al.*, [Fast Inference from Transformers via Speculative Decoding](https://arxiv.org/abs/2211.17192), ICML 2023.
+* Sadhukhan *et al.*, [MagicDec: Breaking the Latency-Throughput Tradeoff for Long Context Generation with Speculative Decoding](https://arxiv.org/abs/2408.11049), ICRL 2025.
+a target LLM speculates itself with a sparsified version of its own KV cache, then it can achieve
+acceptance rates higher than those of small draft models with a full KV cache.
