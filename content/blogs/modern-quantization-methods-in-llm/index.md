@@ -18,7 +18,7 @@ Quantization reduces the precision of the numbers used to represent neural netwo
 
 <figure>
   <img src="images/What-to-quantize.png" alt="Alt text" width="800">
-  <figcaption style="color: gray; text-align: center;">Figure 1: Weight-only and Weight-Activation Quantization. Figure source: https://arxiv.org/abs/2410.04466</figcaption>
+  <figcaption style="color: gray; text-align: center;">Figure 1: Weight-only and Weight-Activation Quantization. Figure source: <a href="https://arxiv.org/abs/2410.04466" target="_blank" rel="noopener">https://arxiv.org/abs/2410.04466</a></figcaption>
 </figure>
 
 
@@ -35,7 +35,7 @@ Quantization can be catergorized as *Uniform* and *Non-uniform* approaches. Unif
     <img src="images/Asymatric-quantization.png" alt="Asymatric quantization" width="50%">
     <img src="images/Symmetric-quantization.png" alt="Symatric quantization" width="50%">
   </div>
-  <figcaption style="color: gray; text-align: center;">Figure 2: Asymatric and Symatric Quantization. Figure source: https://huggingface.co/blog/Isayoften/optimization-rush</figcaption>
+  <figcaption style="color: gray; text-align: center;">Figure 2: Asymatric and Symatric Quantization. Figure source: <a href="https://huggingface.co/blog/Isayoften/optimization-rush" target="_blank" rel="noopener">https://huggingface.co/blog/Isayoften/optimization-rush</a></figcaption>
 </figure>
 
 The quantization range is determined by the maximum absolute value of the data. The quantization process involves the scaling (S) and shifting (Z) stages. The scaling factor is determined by the range of both source and target ranges. Symmetric quantization skips shifting. The de-quantization process is implemented by reverse shifting and scaling.
@@ -61,7 +61,7 @@ Non-uniform quantization is more flexible, borrowing the idea of floating point 
 
 <figure>
   <img src="images/Dynamic-tree-quantization.png" alt="Alt text" width="400" style="margin: auto;">
-  <figcaption style="color: gray; text-align: center;">Figure 3: Dynamic Tree Quantization. Figure source: https://ar5iv.labs.arxiv.org/html/2110.02861</figcaption>
+  <figcaption style="color: gray; text-align: center;">Figure 3: Dynamic Tree Quantization. Figure source: <a href="https://ar5iv.labs.arxiv.org/html/2110.02861" target="_blank" rel="noopener">https://ar5iv.labs.arxiv.org/html/2110.02861</a></figcaption>
 </figure>
 
 Outliers affect quantization accuracy. Tensors may have 0.01-0.1% of values with very large absolute values. Calculating the scaling factor with these outliers reduces the precision of the remaining values with small absolute. Below we introduces a few advanced approaches to address the outlier issue. 
@@ -71,7 +71,7 @@ Outliers affect quantization accuracy. Tensors may have 0.01-0.1% of values with
 
 <figure>
   <img src="images/LLM-int8.png" alt="Alt text" width="800">
-  <figcaption style="color: gray; text-align: center;">Figure 4: LLM.int8 Quantization. Figure source: https://arxiv.org/abs/2208.07339</figcaption>
+  <figcaption style="color: gray; text-align: center;">Figure 4: LLM.int8 Quantization. Figure source: <a href="https://arxiv.org/abs/2208.07339" target="_blank" rel="noopener">https://arxiv.org/abs/2208.07339</a></figcaption>
 </figure>
 
 
@@ -83,7 +83,7 @@ Outliers affect quantization accuracy. Tensors may have 0.01-0.1% of values with
     <img src="images/LoRA.png" alt="Asymatric quantization" width="30%">
     <img src="images/QLoRA.png" alt="Symatric quantization" width="70%">
   </div>
-  <figcaption style="color: gray; text-align: center;">Figure 5: LoRA and QLoRA. Figure source:  https://https://arxiv.org/abs/2106.09685 and https://arxiv.org/abs/2305.14314</figcaption>
+  <figcaption style="color: gray; text-align: center;">Figure 5: LoRA and QLoRA. Figure source:  <a href="https://arxiv.org/abs/2106.09685" target="_blank" rel="noopener">https://arxiv.org/abs/2106.09685</a> and <a href="https://arxiv.org/abs/2305.14314" target="_blank" rel="noopener">https://arxiv.org/abs/2305.14314</a></figcaption>
 </figure>
 
 
@@ -98,7 +98,7 @@ $$
 
 <figure>
   <img src="images/SmoothQuant.png" alt="Alt text" width="400" style="margin: auto;">
-  <figcaption style="color: gray; text-align: center;">Figure 6: SmoothQuant Quantization. Figure source: https://arxiv.org/abs/2211.10438 </figcaption>
+  <figcaption style="color: gray; text-align: center;">Figure 6: SmoothQuant Quantization. Figure source: <a href="https://arxiv.org/abs/2211.10438" target="_blank" rel="noopener">https://arxiv.org/abs/2211.10438</a> </figcaption>
 </figure>
 
 **AWQ (Activation-Aware Weight Quantization)** identifies a small fraction (\~1%) of “salient” weights that have outsized impact on activations and keeps those in higher precision (e.g. FP16), quantizing the rest. But this exerts challenges for mixed-precision execution on hardware. Instead of keeping in higher precision, AWQ’s hardware-friendly design multiplies these salient weights with a scaling factor (s>1) before quantization, reducing the accuracy degradation on which, as shown in the formula and figures as follows. 
@@ -121,5 +121,5 @@ where $\Delta'$ is the new quantization scaler after applying $s$.
 
 <figure>
   <img src="images/AWQ.png" alt="Alt text" width="800">
-  <figcaption style="color: gray; text-align: center;">Figure 7: Activation-aware Weight Quantization. Figure source: https://arxiv.org/abs/2306.00978</figcaption>
+  <figcaption style="color: gray; text-align: center;">Figure 7: Activation-aware Weight Quantization. Figure source: <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">https://arxiv.org/abs/2306.00978</a></figcaption>
 </figure>

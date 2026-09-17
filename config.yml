@@ -229,6 +229,18 @@ markup:
   goldmark:
     renderer:
       unsafe: true
+    extensions:
+      # Pass math through untouched. Without this, markdown mangles LaTeX before
+      # KaTeX sees it: `\,` loses its backslash and `'` becomes a smart quote.
+      passthrough:
+        enable: true
+        delimiters:
+          block:
+            - ['$$', '$$']
+            - ['\[', '\]']
+          inline:
+            - ['$', '$']
+            - ['\(', '\)']
   highlight:
     noClasses: false
     # anchorLineNos: true
