@@ -1,6 +1,6 @@
 ---
 author: "Yufeng Gu"
-title: "Common Tool Tutorial"
+title: "Git, Tmux, Vim Tutorial"
 date: 2020-06-03T08:37:58+08:00
 ShowToc: true
 TocOpen: false
