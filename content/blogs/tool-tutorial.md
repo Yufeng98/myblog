@@ -4,6 +4,11 @@ title: "Common Tool Tutorial"
 date: 2020-06-03T08:37:58+08:00
 ShowToc: true
 TocOpen: false
+aliases:
+  - /blogs/git-tutorial/
+  - /blogs/tmux-tutorial/
+  - /blogs/vim-tutorial/
+  - /blogs/hugo-tutorial/
 ---
 
 This tutorial introduces three commonly used developer tools: **Git**, **Tmux** and **Vim**, as well as **Hugo**, the engine used to deploy this blog. Git handles version control and collaboration with branching and merging. Tmux keeps long-running terminal sessions alive and lets you split your screen into panes. Vim is a powerful modal editor for fast navigation and editing. Hugo is a static site generator for building and deploying websites quickly. Each section below briefly explains what the tool does, why it’s useful, and gives concise descriptions of the components you’ll use most.

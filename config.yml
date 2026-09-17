@@ -1,11 +1,18 @@
 # If your site is in 'https', then make sure your base url isn't written using 'http' otherwise your sitemap would
 # contain http (as opposeed to https) URLs. This would affect Google indexing of your URLs.
 baseURL: "https://yufeng98.github.io/public"
-title: Yufeng's Blog
+title: Yufeng Gu
 # copyright: "© [PaperMod Contributors](https://github.com/adityatelange/hugo-PaperMod/graphs/contributors)"
 theme: [hugo-PaperMod]
 
 enableInlineShortcodes: true
+
+# Hugo >= 0.158 denies text/html content files by default. The survey project page and
+# the tutorial redirect are authored as verbatim HTML, so allow that media type.
+security:
+  allowContent:
+    - ^text/markdown$
+    - ^text/html$
 enableRobotsTXT: true
 buildDrafts: false
 buildFuture: false
